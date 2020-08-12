@@ -6,7 +6,11 @@
   "repository": "https://github.com/ahmethalac/discord-jotform-bot.git",
   "author": "Ahmet Feyzi Halaç <ahmetfeyzihalac@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "husky": "^4.2.5"
+  "devDependencies": {
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "husky": "4.2.5",
+    "lint-staged": "^10.2.11"
   }
 }
