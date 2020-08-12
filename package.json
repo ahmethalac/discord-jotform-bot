@@ -1,0 +1,12 @@
+{
+  "name": "discord-jotform-bot",
+  "version": "1.0.0",
+  "description": "Jotform Bot for Discord",
+  "main": "index.js",
+  "repository": "https://github.com/ahmethalac/discord-jotform-bot.git",
+  "author": "Ahmet Feyzi Halaç <ahmetfeyzihalac@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "husky": "^4.2.5"
+  }
+}
