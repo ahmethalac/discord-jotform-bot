@@ -27,6 +27,11 @@ bot.on('message', (message) => {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
+  /**
+   * TODO:
+   *  - Keep `command` and command file names same, so we can directly call commands
+   *  - You might want to wrap the function body in a try/catch and return error on catch
+   */
   if (command === 'forms') {
     bot.commands.get('getForms').execute(message, args, jotform, Discord, prefix);
   }
