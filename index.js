@@ -6,6 +6,7 @@ const { prefix, token, jotformKey } = require('./config.json');
 jotform.options({
   debug: true,
   apiKey: jotformKey,
+  timeout: 120000,
 });
 
 const bot = new Discord.Client();
@@ -26,11 +27,12 @@ bot.on('message', (message) => {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
-  if (command === 'login') {
-    bot.commands.get('loginJotform').execute(message, args, jotform);
+  if (command === 'forms') {
+    bot.commands.get('getForms').execute(message, args, jotform, Discord, prefix);
   }
   // other commands...
 });
+
 bot.once('ready', () => {
   console.log('Ready!');
 });
