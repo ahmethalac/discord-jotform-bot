@@ -1,11 +1,11 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const jotform = require('jotform');
-const { prefix, token, jotformKey } = require('./config.json');
+require('dotenv').config();
 
 jotform.options({
   debug: true,
-  apiKey: jotformKey,
+  apiKey: process.env.JOTFORM_API_KEY,
   timeout: 120000,
 });
 
@@ -22,9 +22,9 @@ for (const file of commandFiles) {
 }
 
 bot.on('message', (message) => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
+  if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
 
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const args = message.content.slice(process.env.PREFIX.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
   /**
@@ -44,4 +44,5 @@ bot.once('ready', () => {
   console.log('Ready!');
 });
 
-bot.login(token);
+console.log(process.env.PREFIX);
+bot.login(process.env.DISCORD_TOKEN);
