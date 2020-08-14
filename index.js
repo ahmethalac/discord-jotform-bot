@@ -32,10 +32,12 @@ bot.on('message', (message) => {
    *  - Keep `command` and command file names same, so we can directly call commands
    *  - You might want to wrap the function body in a try/catch and return error on catch
    */
-  if (command === 'forms') {
-    bot.commands.get('getForms').execute(message, args, jotform, Discord, prefix);
+  try {
+    bot.commands.get(command).execute(message, args, jotform, Discord);
+  } catch (e) {
+    message.channel.send(`:x:  ${command} is not a valid command!`);
+    console.error(e);
   }
-  // other commands...
 });
 
 bot.once('ready', () => {

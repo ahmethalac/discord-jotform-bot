@@ -7,4 +7,4 @@ Jotform Bot for Discord
 ### Commands
 
 - **!forms:** All forms can be listed by this command
-- **!submissions 'formNumber':** After listing the forms by !forms command, this command can be called with formNumber obtained from the list
+- **submissions 'formNumber':** After listing the forms by !forms, this command can be called with formNumber obtained from the list to get all submissions for that form
