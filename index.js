@@ -1,7 +1,19 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const jotform = require('jotform');
+const express = require('express');
 require('dotenv').config();
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.post('/submission', (req, res) => {
+  console.log(req.body);
+  res.send('ahmet');
+});
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Listening port ${process.env.PORT || 3000}`);
+});
 
 jotform.options({
   debug: true,
@@ -44,5 +56,4 @@ bot.once('ready', () => {
   console.log('Ready!');
 });
 
-console.log(process.env.PREFIX);
 bot.login(process.env.DISCORD_TOKEN);
