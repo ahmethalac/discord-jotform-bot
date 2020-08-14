@@ -1,6 +1,6 @@
 function waitForCommand(message, formArray, jotform, Discord) {
   const filter = (m) => m.author === message.author;
-  const collector = message.channel.createMessageCollector(filter, { time: 15000 });
+  const collector = message.channel.createMessageCollector(filter, { time: 60000 });
 
   function getSubmissions(formID, questionNames) {
     jotform.getFormSubmissions(formID)
@@ -84,8 +84,7 @@ function waitForCommand(message, formArray, jotform, Discord) {
       message.channel.send('Please enter integer for formNumber');
     } else if (Number(formNumber[0]) <= 0 || Number(formNumber[0]) > formArray.length) {
       message.channel.send(`Please enter a number between 1-${formArray.length}`);
-    } else if (command === 'submissions' || command === 'apply') {
-      collector.stop();
+    } else if (command === 'submissions' || command === 'apply' || command === 'details') {
       const questionNames = new Map();
       jotform.getFormQuestions(formArray[Number(formNumber[0]) - 1].id)
         .then((response) => {
@@ -99,7 +98,24 @@ function waitForCommand(message, formArray, jotform, Discord) {
           if (command === 'submissions') {
             getSubmissions(formArray[Number(formNumber[0]) - 1].id, questionNames);
           } else if (command === 'apply') {
+            collector.stop();
             apply(formArray[Number(formNumber[0]) - 1].id, questionNames);
+          } else if (command === 'details') {
+            const formDetails = formArray[Number(formNumber[0]) - 1];
+            message.channel
+              .send(new Discord.MessageEmbed()
+                .setColor('#FFA500')
+                .setTitle(formDetails.title)
+                .setThumbnail('https://i.ibb.co/P1VTF14/info.png')
+                .addFields([
+                  { name: 'Creation Date:', value: formDetails.created_at },
+                  { name: 'Last Modified Date:', value: formDetails.updated_at },
+                  { name: 'Last Submission Date:', value: formDetails.last_submission },
+                  { name: 'Unread submissions:', value: formDetails.new },
+                  { name: 'Total submissions:', value: formDetails.count },
+                  { name: 'Form Type:', value: formDetails.type },
+                  { name: 'URL:', value: formDetails.url },
+                ]));
           }
         });
     }
@@ -127,7 +143,7 @@ module.exports = {
           .addFields(
             ...formArray.map((element, index) => ({
               name: `${index + 1}-) ${element.title}`,
-              value: `created at: ${element.created_at}\nlast modified at: ${element.updated_at}\n${element.count} total submissions\nurl: ${element.url}`,
+              value: `${element.count} total submissions`,
             })),
           );
 
@@ -139,8 +155,9 @@ module.exports = {
         const informationMessage = new Discord.MessageEmbed()
           .setColor('#FFA500')
           .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
-          .setTitle('\nUse "submissions formNumber" command \nto get all submissions of a specific form'
-            + '\n\nUse "apply formNumber" command to fill\nthe specified form"')
+          .setTitle('\nUse "submissions formNumber" command \nto get all submissions of the specified form'
+            + '\n\nUse "apply formNumber" command to fill\nthe specified form'
+            + '\n\nUse "details formNumber" command to get\n details of the specified form')
           .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1');
 
         message.channel.send(informationMessage);
