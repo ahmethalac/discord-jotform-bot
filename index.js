@@ -7,9 +7,8 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.post('/submission', (req, res) => {
+app.post('/submission', (req) => {
   console.log(req.body);
-  res.send('ahmet');
 });
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Listening port ${process.env.PORT || 3000}`);
