@@ -43,7 +43,9 @@ module.exports = {
                 jotform.getFormQuestions(formArray[Number(formNumber[0]) - 1].id)
                   .then((response) => {
                     Object.keys(response).forEach((key) => {
-                      questionNames.set(key, response[key].text);
+                      if (response[key].hidden !== 'Yes' && response[key].type !== 'control_button') {
+                        questionNames.set(key, response[key].text);
+                      }
                     });
                   })
                   .then(() => {
