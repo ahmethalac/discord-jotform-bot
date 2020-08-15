@@ -4,16 +4,6 @@ const jotform = require('jotform');
 const express = require('express');
 require('dotenv').config();
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.post('/submission', (req) => {
-  console.log(req.body);
-});
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Listening port ${process.env.PORT || 3000}`);
-});
-
 jotform.options({
   debug: true,
   apiKey: process.env.JOTFORM_API_KEY,
@@ -21,9 +11,28 @@ jotform.options({
 });
 
 const bot = new Discord.Client();
-bot.commands = new Discord.Collection();
+let notificationChannel;
+bot.login(process.env.DISCORD_TOKEN)
+  .then(() => {
+    bot.channels.fetch(process.env.NOTIFICATION_CHANNEL_ID)
+      .then((channel) => {
+        notificationChannel = channel;
+      });
+  });
 
+bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.post('/submission', (req) => {
+  console.log(req.body);
+  notificationChannel.send(req.body.formID);
+});
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Listening port ${process.env.PORT || 3000}`);
+});
 
 // eslint-disable-next-line no-restricted-syntax
 for (const file of commandFiles) {
@@ -50,9 +59,3 @@ bot.on('message', (message) => {
     console.error(e);
   }
 });
-
-bot.once('ready', () => {
-  console.log('Ready!');
-});
-
-bot.login(process.env.DISCORD_TOKEN);
