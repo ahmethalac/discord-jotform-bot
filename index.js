@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const jotform = require('jotform');
 const express = require('express');
+const multer = require('multer');
 require('dotenv').config();
 
 jotform.options({
@@ -24,11 +25,11 @@ bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.post('/submission', (req) => {
+const upload = multer();
+app.post('/submission', upload.none(), (req, res) => {
   console.log(req.body);
   notificationChannel.send(req.body.formID);
+  res.send();
 });
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Listening port ${process.env.PORT || 3000}`);
