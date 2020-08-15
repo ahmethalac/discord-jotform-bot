@@ -13,6 +13,7 @@ jotform.options({
 
 const bot = new Discord.Client();
 let notificationChannel;
+
 bot.login(process.env.DISCORD_TOKEN)
   .then(() => {
     bot.channels.fetch(process.env.NOTIFICATION_CHANNEL_ID)
@@ -26,11 +27,16 @@ const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith
 
 const app = express();
 const upload = multer();
+
 app.post('/submission', upload.none(), (req, res) => {
-  console.log(req.body);
-  notificationChannel.send(req.body.formID);
+  notificationChannel.send(new Discord.MessageEmbed()
+    .setColor('#FFA500')
+    .setAuthor(`New submission for "${req.body.formTitle}"`, 'https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1')
+    .setThumbnail('https://i.ibb.co/tpM3nkR/mail.png')
+    .setDescription(String(req.body.pretty).split(', ').join('\n')));
   res.send();
 });
+
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Listening port ${process.env.PORT || 3000}`);
 });
@@ -48,11 +54,6 @@ bot.on('message', (message) => {
   const args = message.content.slice(process.env.PREFIX.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
-  /**
-   * TODO:
-   *  - Keep `command` and command file names same, so we can directly call commands
-   *  - You might want to wrap the function body in a try/catch and return error on catch
-   */
   try {
     bot.commands.get(command).execute(message, args, jotform, Discord);
   } catch (e) {
