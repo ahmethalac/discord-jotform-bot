@@ -55,7 +55,7 @@ bot.on('message', (message) => {
   const command = args.shift().toLowerCase();
 
   try {
-    bot.commands.get(command).execute(message, args, jotform, Discord);
+    bot.commands.get(command).execute(message, args, jotform, Discord, notificationChannel);
   } catch (e) {
     message.channel.send(`:x:  ${command} is not a valid command!`);
     console.error(e);

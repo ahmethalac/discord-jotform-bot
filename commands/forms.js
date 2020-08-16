@@ -1,4 +1,4 @@
-function waitForCommand(message, formArray, jotform, Discord) {
+function waitForCommand(message, formArray, jotform, Discord, notificationChannel) {
   const filter = (m) => m.author === message.author;
   const collector = message.channel.createMessageCollector(filter, { time: 60000 });
 
@@ -29,9 +29,7 @@ function waitForCommand(message, formArray, jotform, Discord) {
       });
   }
 
-  function apply(formID, questionNames) {
-    const submission = new Map();
-
+  function apply(formID, formTitle, questionNames) {
     const informationMessage = new Discord.MessageEmbed()
       .setColor('#FFA500')
       .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
@@ -40,6 +38,9 @@ function waitForCommand(message, formArray, jotform, Discord) {
       .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1');
 
     message.channel.send(informationMessage);
+
+    const fieldsWithAnswers = [];
+    const submission = new Map();
 
     function askQuestionRecursive(index) {
       if (index !== questionNames.size) {
@@ -52,12 +53,19 @@ function waitForCommand(message, formArray, jotform, Discord) {
             message.channel.awaitMessages((m) => m.author === message.author, { max: 1, time: 30000, errors: ['time'] })
               .then((collected) => {
                 submission.set(`submission[${key}]`, collected.first().content);
+                fieldsWithAnswers.push(`${questionNames.get(key)}: ${collected.first().content}`);
               })
               .finally(() => {
                 askQuestionRecursive(index + 1);
               }),
           );
       } else {
+        notificationChannel.send(new Discord.MessageEmbed()
+          .setColor('#FFA500')
+          .setAuthor(`New submission for "${formTitle}"`, 'https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1')
+          .setThumbnail('https://i.ibb.co/tpM3nkR/mail.png')
+          .setDescription(fieldsWithAnswers.join('\n')));
+
         jotform.createFormSubmission(formID, Object.fromEntries(submission))
           .finally(() => {
             message.channel
@@ -72,6 +80,23 @@ function waitForCommand(message, formArray, jotform, Discord) {
     }
 
     askQuestionRecursive(0);
+  }
+
+  function getDetails(formDetails) {
+    message.channel
+      .send(new Discord.MessageEmbed()
+        .setColor('#FFA500')
+        .setTitle(formDetails.title)
+        .setThumbnail('https://i.ibb.co/P1VTF14/info.png')
+        .addFields([
+          { name: 'Creation Date:', value: formDetails.created_at },
+          { name: 'Last Modified Date:', value: formDetails.updated_at },
+          { name: 'Last Submission Date:', value: formDetails.last_submission },
+          { name: 'Unread submissions:', value: formDetails.new },
+          { name: 'Total submissions:', value: formDetails.count },
+          { name: 'Form Type:', value: formDetails.type },
+          { name: 'URL:', value: formDetails.url },
+        ]));
   }
 
   collector.on('collect', (collected) => {
@@ -95,27 +120,14 @@ function waitForCommand(message, formArray, jotform, Discord) {
           });
         })
         .then(() => {
+          const form = formArray[Number(formNumber[0]) - 1];
           if (command === 'submissions') {
-            getSubmissions(formArray[Number(formNumber[0]) - 1].id, questionNames);
+            getSubmissions(form.id, questionNames);
           } else if (command === 'apply') {
             collector.stop();
-            apply(formArray[Number(formNumber[0]) - 1].id, questionNames);
+            apply(form.id, form.title, questionNames);
           } else if (command === 'details') {
-            const formDetails = formArray[Number(formNumber[0]) - 1];
-            message.channel
-              .send(new Discord.MessageEmbed()
-                .setColor('#FFA500')
-                .setTitle(formDetails.title)
-                .setThumbnail('https://i.ibb.co/P1VTF14/info.png')
-                .addFields([
-                  { name: 'Creation Date:', value: formDetails.created_at },
-                  { name: 'Last Modified Date:', value: formDetails.updated_at },
-                  { name: 'Last Submission Date:', value: formDetails.last_submission },
-                  { name: 'Unread submissions:', value: formDetails.new },
-                  { name: 'Total submissions:', value: formDetails.count },
-                  { name: 'Form Type:', value: formDetails.type },
-                  { name: 'URL:', value: formDetails.url },
-                ]));
+            getDetails(form);
           }
         });
     }
@@ -124,7 +136,7 @@ function waitForCommand(message, formArray, jotform, Discord) {
 
 module.exports = {
   name: 'forms',
-  execute(message, args, jotform, Discord) {
+  execute(message, args, jotform, Discord, notificationChannel) {
     jotform.getForms({ limit: 50 })
       .then((value) => {
         const formArray = [];
@@ -149,7 +161,7 @@ module.exports = {
 
         message.channel.send(replyMessage)
           .then(() => {
-            waitForCommand(message, formArray, jotform, Discord);
+            waitForCommand(message, formArray, jotform, Discord, notificationChannel);
           });
 
         const informationMessage = new Discord.MessageEmbed()
