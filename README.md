@@ -2,7 +2,9 @@
 
 Jotform Bot for Discord
 
-## Documentation
+## Getting Started
+
+    Go to .env file and edit the required parts for JotFormBot to work
 
 ### Commands
 
@@ -15,9 +17,9 @@ Jotform Bot for Discord
 
 ### TODO
 
-    - Use exact versions in package.json (no ^)
+    + Use exact versions in package.json (no ^)
     - Add subtle comments in your code
-    - Add a dummy .env file
+    + Add a dummy .env file
     - Add error handling in the post/submission route and return correct error codes
     - import `commands` via an index.js file and use its keys to iterate over and set commands
     - Remove `eslint disable` lines
