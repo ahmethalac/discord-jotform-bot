@@ -23,7 +23,7 @@ bot.login(process.env.DISCORD_TOKEN)
   });
 
 bot.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./src/commands').filter((file) => file.endsWith('.js'));
 
 const app = express();
 const upload = multer();

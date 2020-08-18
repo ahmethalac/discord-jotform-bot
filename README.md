@@ -4,7 +4,8 @@ Jotform Bot for Discord
 
 ## Getting Started
 
-    Go to .env file and edit the required parts for JotFormBot to work
+1. Go to .env file and edit the required parts for JotFormBot to work
+2. Run `node src/main.js` in project folder
 
 ### Commands
 
@@ -24,10 +25,10 @@ Jotform Bot for Discord
     - import `commands` via an index.js file and use its keys to iterate over and set commands
     - Remove `eslint disable` lines
     - use `import` instead of `require` (modern syntax)
-    - set node version in package.json and also with a .nvmrc file and
-    - update folder structure and move code under /src dir
+    + set node version in package.json and also with a .nvmrc file and
+    + update folder structure and move code under /src dir
     - use async/await in `execute` function under forms.js command file
-    - rename index.js to main.js or server.js
+    + rename index.js to main.js or server.js
     - for a more readable code, order of ops under {server|main}.js should follow like this:
         - set globals (eg. `const app = express();`)
         - set configs
