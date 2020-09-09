@@ -1,6 +1,6 @@
 function waitForCommand(message, formArray, jotform, Discord, notificationChannel) {
   const filter = (m) => m.author === message.author;
-  const collector = message.channel.createMessageCollector(filter, { time: 60000 });
+  const collector = message.channel.createMessageCollector(filter, { time: 600000 });
 
   function getSubmissions(formID, questionNames) {
     jotform.getFormSubmissions(formID)
@@ -100,6 +100,10 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
   }
 
   collector.on('collect', (collected) => {
+    if (collected.content === '!forms') {
+      collector.stop();
+      return;
+    }
     const formNumber = collected.content.trim().split(/ +/);
     const command = formNumber.shift();
     if (formNumber.length !== 1) {
@@ -109,7 +113,7 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
       message.channel.send('Please enter integer for formNumber');
     } else if (Number(formNumber[0]) <= 0 || Number(formNumber[0]) > formArray.length) {
       message.channel.send(`Please enter a number between 1-${formArray.length}`);
-    } else if (command === 'submissions' || command === 'apply' || command === 'details') {
+    } else if (command === 'submissions' || command === 'fill' || command === 'details') {
       const questionNames = new Map();
       jotform.getFormQuestions(formArray[Number(formNumber[0]) - 1].id)
         .then((response) => {
@@ -120,11 +124,11 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
           });
         })
         .then(() => {
+          collector.stop();
           const form = formArray[Number(formNumber[0]) - 1];
           if (command === 'submissions') {
             getSubmissions(form.id, questionNames);
-          } else if (command === 'apply') {
-            collector.stop();
+          } else if (command === 'fill') {
             apply(form.id, form.title, questionNames);
           } else if (command === 'details') {
             getDetails(form);
@@ -142,7 +146,7 @@ module.exports = {
         const formArray = [];
 
         value.forEach((element) => {
-          if (element.status === 'ENABLED') {
+          if (element.status === 'ENABLED' && !element.title.startsWith('todoList_')) {
             formArray.push(element);
           }
         });
@@ -168,7 +172,7 @@ module.exports = {
           .setColor('#FFA500')
           .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
           .setTitle('\nUse "submissions formNumber" command \nto get all submissions of the specified form'
-            + '\n\nUse "apply formNumber" command to fill\nthe specified form'
+            + '\n\nUse "fill formNumber" command to fill\nthe specified form'
             + '\n\nUse "details formNumber" command to get\n details of the specified form')
           .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1');
 
