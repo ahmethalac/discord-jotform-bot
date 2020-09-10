@@ -1,4 +1,5 @@
 function waitForCommand(message, formArray, jotform, Discord, notificationChannel) {
+  // Get all messages from author of the "!forms" message
   const filter = (m) => m.author === message.author;
   const collector = message.channel.createMessageCollector(filter, { time: 600000 });
 
@@ -10,7 +11,7 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
           .setTitle('Submissions:')
           .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
           .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1')
-          .addFields(
+          .addFields( // Iterate over submissions and add a new field for each of them
             ...r.map((submission, index) => ({
               name: `${index + 1}.`,
               value: Array.from(questionNames.keys())
@@ -108,8 +109,7 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
     const command = formNumber.shift();
     if (formNumber.length !== 1) {
       message.channel.send('Wrong command! Structure of the command should be like "submissions formNumber"');
-      // eslint-disable-next-line no-restricted-globals
-    } else if (isNaN(Number(formNumber[0]))) {
+    } else if (Number.isInteger(formNumber[0])) {
       message.channel.send('Please enter integer for formNumber');
     } else if (Number(formNumber[0]) <= 0 || Number(formNumber[0]) > formArray.length) {
       message.channel.send(`Please enter a number between 1-${formArray.length}`);
@@ -138,45 +138,42 @@ function waitForCommand(message, formArray, jotform, Discord, notificationChanne
   });
 }
 
-module.exports = {
-  name: 'forms',
-  execute(message, args, jotform, Discord, notificationChannel) {
-    jotform.getForms({ limit: 50 })
-      .then((value) => {
-        const formArray = [];
+export default async (message, args, jotform, Discord, notificationChannel) => {
+  const forms = await jotform.getForms({ limit: 50 });
+  const formArray = [];
 
-        value.forEach((element) => {
-          if (element.status === 'ENABLED' && !element.title.startsWith('todoList_')) {
-            formArray.push(element);
-          }
-        });
+  forms.forEach((form) => {
+    if (form.status === 'ENABLED' && !form.title.startsWith('todoList_')) {
+      formArray.push(form);
+    }
+  });
 
-        const replyMessage = new Discord.MessageEmbed()
-          .setColor('#FFA500')
-          .setTitle('Forms:')
-          .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
-          .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1')
-          .addFields(
-            ...formArray.map((element, index) => ({
-              name: `${index + 1}-) ${element.title}`,
-              value: `${element.count} total submissions`,
-            })),
-          );
+  const replyMessage = new Discord.MessageEmbed()
+    .setColor('#FFA500')
+    .setTitle('Forms:')
+    .setAuthor(
+      'Jotform',
+      'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg',
+      'https://www.jotform.com/',
+    )
+    .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1')
+    .addFields(
+      ...formArray.map((element, index) => ({
+        name: `${index + 1}-) ${element.title}`,
+        value: `${element.count} total submissions`,
+      })),
+    );
 
-        message.channel.send(replyMessage)
-          .then(() => {
-            waitForCommand(message, formArray, jotform, Discord, notificationChannel);
-          });
+  await message.channel.send(replyMessage);
+  waitForCommand(message, formArray, jotform, Discord, notificationChannel);
 
-        const informationMessage = new Discord.MessageEmbed()
-          .setColor('#FFA500')
-          .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
-          .setTitle('\nUse "submissions formNumber" command \nto get all submissions of the specified form'
+  const informationMessage = new Discord.MessageEmbed()
+    .setColor('#FFA500')
+    .setAuthor('Jotform', 'https://www.jotform.com/resources/assets/logo/jotform-icon-white-560x560.jpg', 'https://www.jotform.com/')
+    .setTitle('\nUse "submissions formNumber" command \nto get all submissions of the specified form'
             + '\n\nUse "fill formNumber" command to fill\nthe specified form'
             + '\n\nUse "details formNumber" command to get\n details of the specified form')
-          .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1');
+    .setThumbnail('https://www.jotform.com/wepay/assets/img/podo.png?v=1.2.0.1');
 
-        message.channel.send(informationMessage);
-      });
-  },
+  await message.channel.send(informationMessage);
 };
